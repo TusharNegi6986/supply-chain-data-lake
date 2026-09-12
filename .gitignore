@@ -3,6 +3,7 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+
 # C extensions
 *.so
 
@@ -216,3 +217,34 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+.env.*
+
+# Local database / temporary files
+*.log
+
+# Generated pipeline output
+datalake/processed/*.csv
+pipeline/reports/*.txt
+pipeline/reports/*.json
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+.env.*
+
+# Large raw datasets
+datalake/raw/DataCoSupplyChainDataset.csv
+datalake/raw/tokenized_access_logs.csv
