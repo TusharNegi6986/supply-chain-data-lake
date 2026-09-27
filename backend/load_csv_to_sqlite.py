@@ -1,10 +1,14 @@
-﻿import sqlite3
+﻿# backend/load_csv_to_sqlite.py  (writes backend/dev.db)
+import sqlite3
 import pandas as pd
 from pathlib import Path
 
-repo_root = Path(__file__).resolve().parents[1]
-csv_path = repo_root / "datalake" / "raw" / "DescriptionDataCoSupplyChain.csv"
+repo_root = Path(__file__).resolve().parents[0]  # backend/
+csv_path = repo_root.parent / "datalake" / "raw" / "DescriptionDataCoSupplyChain.csv"
 db_path = repo_root / "dev.db"
+
+print("CSV:", csv_path)
+print("DB:", db_path)
 
 df = pd.read_csv(csv_path)
 df.columns = [c.replace(" ", "_").lower() for c in df.columns]
