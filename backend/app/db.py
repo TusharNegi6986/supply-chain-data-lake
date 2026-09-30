@@ -45,8 +45,9 @@ async def get_orders_from_view(
 
 
 async def get_orders_count() -> int:
-    query = "SELECT COUNT(*) AS cnt FROM analytics.analytics_order_view"
-    row = await db.fetch_one(query)
-    if row is None:
-        return 0
-    return int(row["cnt"])
+    query = """
+        SELECT COUNT(*)
+        FROM analytics.analytics_order_view
+    """
+    result = await db.fetch_one(query)
+    return int(result[0])

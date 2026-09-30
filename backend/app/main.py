@@ -17,6 +17,8 @@ from app.models import OrderRecord
 
 from app.models.order_record import OrderRecord
 
+from app.db import get_orders_from_view, get_orders_count
+
 from .db import (
     connect,
     disconnect,
@@ -162,5 +164,5 @@ async def get_orders_db(
             # fallback: include normalized dict for debugging (so you still see data)
             typed_rows.append(norm)
 
-    total = len(typed_rows)
+    total = await get_orders_count()
     return {"total": total, "count": len(typed_rows), "limit": limit, "offset": offset, "rows": typed_rows}

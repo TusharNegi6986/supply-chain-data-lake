@@ -248,3 +248,7 @@ __pycache__/
 # Large raw datasets
 datalake/raw/DataCoSupplyChainDataset.csv
 datalake/raw/tokenized_access_logs.csv
+
+backend/dev.db
+backend/web_logs.txt
+backend/web_errors.txt
