@@ -1,6 +1,5 @@
 ﻿import os
 from typing import List, Dict, Optional
-
 from dotenv import load_dotenv
 from databases import Database
 
@@ -9,9 +8,7 @@ load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
-    raise RuntimeError(
-        "DATABASE_URL not set in .env (backend/.env)"
-    )
+    raise RuntimeError("DATABASE_URL not set in .env (backend/.env)")
 
 db = Database(DATABASE_URL)
 
@@ -33,35 +30,23 @@ async def get_orders_from_view(
     limit = int(limit)
     offset = int(offset)
 
-    allowed_order_cols = {
-        "id",
-    }
+    allowed_order_cols = {"id"}
 
     order_clause = ""
-
     if order_by:
         col = order_by.strip().lower()
-
         if col in allowed_order_cols:
             order_clause = f" ORDER BY {col}"
 
-    query = (
-        f"SELECT * FROM analytics_order_view"
-        f"{order_clause}"
-        f" LIMIT {limit} OFFSET {offset}"
-    )
+    query = f"SELECT * FROM analytics.analytics_order_view{order_clause} LIMIT {limit} OFFSET {offset}"
 
     rows = await db.fetch_all(query)
-
     return [dict(row) for row in rows]
 
 
 async def get_orders_count() -> int:
-    query = "SELECT COUNT(*) AS cnt FROM analytics_order_view"
-
+    query = "SELECT COUNT(*) AS cnt FROM analytics.analytics_order_view"
     row = await db.fetch_one(query)
-
     if row is None:
         return 0
-
     return int(row["cnt"])
