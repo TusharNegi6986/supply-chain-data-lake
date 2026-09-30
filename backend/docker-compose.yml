@@ -1,6 +1,7 @@
 ﻿services:
   db:
     image: postgres:15
+    container_name: backend-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -14,10 +15,21 @@
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: backend-web
     command: >
       sh -c "
-        until psql -h db -U postgres -d supplychain -c '\q' 2>/dev/null; do echo waiting for db; sleep 1; done;
-        psql -h db -U postgres -d supplychain -f /app/sql/analytics_views.sql 2>/dev/null || true;
+        until psql postgresql://postgres:password@db:5432/supplychain -c '\q' 2>/dev/null;
+        do
+          echo 'waiting for db...';
+          sleep 1;
+        done;
+
+        echo 'DB ready, applying views...';
+
+        psql postgresql://postgres:password@db:5432/supplychain -f /app/sql/analytics_views.sql 2>/dev/null || true;
+
+        echo 'Starting FastAPI...';
+
         uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
       "
     ports:
