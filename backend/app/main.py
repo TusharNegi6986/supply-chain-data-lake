@@ -1,168 +1,68 @@
-﻿import os
-from pathlib import Path
-from typing import Optional, List
-
-import pandas as pd
-from dotenv import load_dotenv
-from fastapi import FastAPI, Query, HTTPException
+﻿# backend/app/main.py
+import os
+import logging
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 
-from fastapi.middleware.cors import CORSMiddleware
-from .routers import orders as orders_router, analytics as analytics_router
+from . import db as db_module
+from app import db as db_module
 
-from .models.order_record import OrderRecord
+logger = logging.getLogger("backend.main")
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+logger.addHandler(handler)
 
-import re
-from app.models import OrderRecord
+app = FastAPI(title="Supply Chain Backend (FastAPI)")
 
-from app.models.order_record import OrderRecord
-
-from app.db import get_orders_from_view, get_orders_count
-
-from .db import (
-    connect,
-    disconnect,
-    get_orders_from_view,
-    get_orders_count,
-)
-
-load_dotenv()
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
-DEFAULT_CSV = (
-    REPO_ROOT
-    / "datalake"
-    / "raw"
-    / "DescriptionDataCoSupplyChain.csv"
-)
-
-CSV_PATH = Path(os.getenv("DATA_CSV", str(DEFAULT_CSV)))
-
-app = FastAPI(
-    title="Supply Chain DataLake - Backend API",
-    version="0.4.0",
-)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # for dev; tighten in production to your frontend origin
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# remove existing DB endpoint from file (if you already moved it),
-# then register routers:
-app.include_router(orders_router.router)
-app.include_router(analytics_router.router)
-
-
-# --------------------------------------------------
-# Response model for paginated orders
-# --------------------------------------------------
-
-class OrdersPage(BaseModel):
+class OrdersResponse(BaseModel):
     total: int
     count: int
     limit: int
     offset: int
-    rows: List[OrderRecord]
+    rows: list
 
-
-# --------------------------------------------------
-# Health API
-# --------------------------------------------------
-
-@app.get("/health")
-def health():
-    return {
-        "status": "ok",
-        "csv_path": str(CSV_PATH),
-    }
-
-
-# --------------------------------------------------
-# CSV API
-# --------------------------------------------------
-
-@app.get("/orders")
-def get_orders(
-    limit: int = Query(10, ge=1, le=1000),
-):
-    try:
-        df = pd.read_csv(
-            CSV_PATH,
-            nrows=limit,
-        )
-
-        records = df.fillna("").to_dict(
-            orient="records"
-        )
-
-        return {
-            "count": len(records),
-            "rows": records,
-        }
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed reading CSV: {e}",
-        )
-
-
-# --------------------------------------------------
-# Database connection lifecycle
-# --------------------------------------------------
 
 @app.on_event("startup")
-async def startup():
-    await connect()
+async def startup_event():
+    # Connect with retries to give Docker Postgres time to be ready.
+    try:
+        await db_module.try_connect_with_retry(retries=10, delay=1.0)
+        # Resolve view now so errors are visible in logs early.
+        try:
+            await db_module.resolve_view_name()
+        except Exception as exc:
+            logger.error(f"View resolution failed during startup: {exc!r}")
+            # Do NOT crash — let endpoints report error; but log clearly.
+    except Exception as exc:
+        raise
 
 
 @app.on_event("shutdown")
-async def shutdown():
-    await disconnect()
+async def shutdown_event():
+    await db_module.disconnect()
 
 
-# --------------------------------------------------
-# Database API
-# --------------------------------------------------
+@app.get("/health")
+async def health():
+    """
+    Returns basic health and which DATABASE_URL is in use.
+    """
+    return {"status": "ok", "database_url": os.environ.get("DATABASE_URL", "sqlite+aiosqlite:///./dev.db")}
 
-def normalize_keys(d: dict) -> dict:
-    """Normalize DB keys: remove punctuation, spaces->underscores, lowercase."""
-    out = {}
-    for k, v in d.items():
-        if k is None:
-            continue
-        s = str(k).strip()
-        s = re.sub(r"[^\w\s]", "", s)
-        s = re.sub(r"\s+", "_", s)
-        s = s.lower()
-        out[s] = v
-    return out
 
-@app.get("/orders_db")
-async def get_orders_db(
-    limit: int = Query(10, ge=1, le=1000),
-    offset: int = Query(0, ge=0),
-    order_by: Optional[str] = None,
-):
+@app.get("/orders_db", response_model=OrdersResponse)
+async def orders_db(limit: int = Query(10, ge=1, le=100), offset: int = Query(0, ge=0)):
+    """
+    Return rows from analytics view with pagination.
+    Tries to auto-detect view name (analytics.analytics_order_view or analytics_order_view).
+    """
     try:
-        raw_rows = await get_orders_from_view(limit=limit, offset=offset, order_by=order_by)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-    typed_rows = []
-    for r in raw_rows:
-        norm = normalize_keys(r)   # e.g. { "id": 1, "fields": 1, "description": "Type" }
-        try:
-            rec = OrderRecord.model_validate(norm)   # pydantic v2
-            typed_rows.append(rec.model_dump())
-        except Exception:
-            # fallback: include normalized dict for debugging (so you still see data)
-            typed_rows.append(norm)
-
-    total = await get_orders_count()
-    return {"total": total, "count": len(typed_rows), "limit": limit, "offset": offset, "rows": typed_rows}
+        result = await db_module.get_orders_from_view(limit=limit, offset=offset)
+        return result
+    except RuntimeError as exc:
+        # Clear error when view missing
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        logger.exception("Unexpected error while fetching orders")
+        raise HTTPException(status_code=500, detail="unexpected server error")

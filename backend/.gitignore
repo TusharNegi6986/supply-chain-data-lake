@@ -1,4 +1,21 @@
-﻿# local backend/dev files
-backend/dev.db
-backend/web_logs.txt
-backend/web_errors.txt
+﻿# Database file
+dev.db
+
+# Logs / errors
+web_logs.txt
+web_errors.txt
+db_errors.txt
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+.env
+
+# Nested accidental folder
+backend/backend/
+
+# OS files
+.DS_Store
