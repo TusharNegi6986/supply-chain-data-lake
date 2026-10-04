@@ -1,68 +1,90 @@
-﻿# backend/app/main.py
-import os
-import logging
-from fastapi import FastAPI, HTTPException, Query
-from pydantic import BaseModel
+﻿from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
-from . import db as db_module
-from app import db as db_module
+from .db import fetch_all, fetch_one
 
-logger = logging.getLogger("backend.main")
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
-logger.addHandler(handler)
+app = FastAPI(
+    title="Supply Chain Analytics API",
+    version="1.0.0"
+)
 
-app = FastAPI(title="Supply Chain Backend (FastAPI)")
-
-class OrdersResponse(BaseModel):
-    total: int
-    count: int
-    limit: int
-    offset: int
-    rows: list
-
-
-@app.on_event("startup")
-async def startup_event():
-    # Connect with retries to give Docker Postgres time to be ready.
-    try:
-        await db_module.try_connect_with_retry(retries=10, delay=1.0)
-        # Resolve view now so errors are visible in logs early.
-        try:
-            await db_module.resolve_view_name()
-        except Exception as exc:
-            logger.error(f"View resolution failed during startup: {exc!r}")
-            # Do NOT crash — let endpoints report error; but log clearly.
-    except Exception as exc:
-        raise
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    await db_module.disconnect()
+# Allow React frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health")
-async def health():
-    """
-    Returns basic health and which DATABASE_URL is in use.
-    """
-    return {"status": "ok", "database_url": os.environ.get("DATABASE_URL", "sqlite+aiosqlite:///./dev.db")}
+def health():
+    return {"status": "ok"}
 
 
-@app.get("/orders_db", response_model=OrdersResponse)
-async def orders_db(limit: int = Query(10, ge=1, le=100), offset: int = Query(0, ge=0)):
-    """
-    Return rows from analytics view with pagination.
-    Tries to auto-detect view name (analytics.analytics_order_view or analytics_order_view).
-    """
+@app.get("/api/kpis")
+def get_kpis():
     try:
-        result = await db_module.get_orders_from_view(limit=limit, offset=offset)
-        return result
-    except RuntimeError as exc:
-        # Clear error when view missing
-        raise HTTPException(status_code=500, detail=str(exc))
-    except Exception as exc:
-        logger.exception("Unexpected error while fetching orders")
-        raise HTTPException(status_code=500, detail="unexpected server error")
+        return fetch_one("""
+            SELECT *
+            FROM analytics.supply_chain_kpis
+        """)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/monthly-sales")
+def get_monthly_sales():
+    try:
+        return fetch_all("""
+            SELECT *
+            FROM analytics.monthly_sales
+            ORDER BY month
+        """)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/categories")
+def get_categories():
+    try:
+        return fetch_all("""
+            SELECT *
+            FROM analytics.category_performance
+        """)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/delivery")
+def get_delivery():
+    try:
+        return fetch_all("""
+            SELECT *
+            FROM analytics.delivery_performance
+        """)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/shipping-modes")
+def get_shipping_modes():
+    try:
+        return fetch_all("""
+            SELECT *
+            FROM analytics.shipping_mode_performance
+        """)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/warehouses")
+def get_warehouses():
+    try:
+        return fetch_all("""
+            SELECT *
+            FROM analytics.warehouse_inventory_performance
+        """)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

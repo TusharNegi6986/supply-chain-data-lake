@@ -1,6 +1,4 @@
 ﻿fastapi
 uvicorn[standard]
-pandas
+psycopg2-binary
 python-dotenv
-databases
-asyncpg
