@@ -1,4 +1,5 @@
-﻿# Database file
+﻿
+# Database file
 dev.db
 
 # Logs / errors
@@ -12,6 +13,8 @@ __pycache__/
 
 # Virtual environment
 venv/
+
+# Environment variables
 .env
 
 # Nested accidental folder
@@ -19,3 +22,13 @@ backend/backend/
 
 # OS files
 .DS_Store
+
+# Generated dataset storage
+storage/raw/*
+storage/processed/*
+storage/quarantine/*
+
+# Preserve storage directory placeholders
+!storage/raw/.gitkeep
+!storage/processed/.gitkeep
+!storage/quarantine/.gitkeep

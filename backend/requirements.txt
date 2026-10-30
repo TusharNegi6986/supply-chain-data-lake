@@ -2,3 +2,7 @@
 uvicorn[standard]
 psycopg2-binary
 python-dotenv
+python-multipart
+pandas
+pyarrow
+openpyxl

@@ -2,13 +2,19 @@
 from fastapi.middleware.cors import CORSMiddleware
 
 from .db import fetch_all, fetch_one
+from .api.datasets import router as datasets_router
+
 
 app = FastAPI(
-    title="Supply Chain Analytics API",
-    version="1.0.0"
+    title="Supply Chain Analytics Platform API",
+    version="2.0.0",
+    description=(
+        "Analytics platform for dataset ingestion, profiling, "
+        "quality validation, analytics, and dashboards."
+    ),
 )
 
-# Allow React frontend
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,6 +22,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.include_router(datasets_router)
 
 
 @app.get("/health")
