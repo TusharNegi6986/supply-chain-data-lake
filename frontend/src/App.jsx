@@ -9,6 +9,7 @@ import {
   Activity,
   RefreshCw,
   ArrowUpRight,
+  Upload,
 } from "lucide-react";
 
 import {
@@ -26,6 +27,8 @@ import CategoryPerformanceChart from "./components/CategoryPerformanceChart";
 import DeliveryPerformanceChart from "./components/DeliveryPerformanceChart";
 import ShippingModeChart from "./components/ShippingModeChart";
 import WarehouseInventoryChart from "./components/WarehouseInventoryChart";
+import DatasetUpload from "./components/DatasetUpload";
+import DatasetLibrary from "./components/DatasetLibrary";
 
 import "./styles/dashboard.css";
 
@@ -92,9 +95,7 @@ function App() {
           <div>
             <span className="section-kicker">OVERVIEW</span>
             <h2>Key Performance Indicators</h2>
-            <p>
-              Current operational health across the supply chain
-            </p>
+            <p>Current operational health across the supply chain</p>
           </div>
         </div>
 
@@ -115,9 +116,7 @@ function App() {
 
       <section className="business-signal">
         <div className="signal-content">
-          <span className="signal-label">
-            SUPPLY CHAIN SIGNAL
-          </span>
+          <span className="signal-label">SUPPLY CHAIN SIGNAL</span>
 
           <h2>
             Fulfillment is strong, but delivery reliability needs attention
@@ -125,28 +124,17 @@ function App() {
 
           <p>
             Orders are being fulfilled at{" "}
-            <strong>
-              {kpis?.order_fulfillment_rate}%
-            </strong>
-            , while on-time delivery is only{" "}
-            <strong>
-              {kpis?.on_time_delivery_rate}%
-            </strong>
-            .
+            <strong>{kpis?.order_fulfillment_rate}%</strong>, while on-time
+            delivery is only <strong>{kpis?.on_time_delivery_rate}%</strong>.
           </p>
         </div>
 
         <div className="signal-metric">
           <span>On-Time Delivery</span>
 
-          <strong>
-            {kpis?.on_time_delivery_rate}%
-          </strong>
+          <strong>{kpis?.on_time_delivery_rate}%</strong>
 
-          <ArrowUpRight
-            size={17}
-            className="signal-arrow"
-          />
+          <ArrowUpRight size={17} className="signal-arrow" />
         </div>
       </section>
     </>
@@ -158,9 +146,7 @@ function App() {
         <div>
           <span className="section-kicker">SALES ANALYTICS</span>
           <h2>Sales Performance</h2>
-          <p>
-            Revenue trends and category-level performance
-          </p>
+          <p>Revenue trends and category-level performance</p>
         </div>
       </div>
 
@@ -182,9 +168,7 @@ function App() {
         <div>
           <span className="section-kicker">LOGISTICS</span>
           <h2>Delivery & Shipping</h2>
-          <p>
-            Delivery reliability and shipping mode performance
-          </p>
+          <p>Delivery reliability and shipping mode performance</p>
         </div>
       </div>
 
@@ -196,29 +180,20 @@ function App() {
 
       <div className="business-signal logistics-signal">
         <div className="signal-content">
-          <span className="signal-label">
-            LOGISTICS SIGNAL
-          </span>
+          <span className="signal-label">LOGISTICS SIGNAL</span>
 
-          <h2>
-            On-time delivery is the primary operational opportunity
-          </h2>
+          <h2>On-time delivery is the primary operational opportunity</h2>
 
           <p>
             Overall on-time delivery currently stands at{" "}
-            <strong>
-              {kpis?.on_time_delivery_rate}%
-            </strong>
-            .
+            <strong>{kpis?.on_time_delivery_rate}%</strong>.
           </p>
         </div>
 
         <div className="signal-metric">
           <span>On-Time Rate</span>
 
-          <strong>
-            {kpis?.on_time_delivery_rate}%
-          </strong>
+          <strong>{kpis?.on_time_delivery_rate}%</strong>
         </div>
       </div>
     </div>
@@ -230,9 +205,7 @@ function App() {
         <div>
           <span className="section-kicker">INVENTORY</span>
           <h2>Warehouse Performance</h2>
-          <p>
-            Inventory levels, utilization and warehouse activity
-          </p>
+          <p>Inventory levels, utilization and warehouse activity</p>
         </div>
       </div>
 
@@ -243,30 +216,22 @@ function App() {
       <div className="inventory-summary-grid">
         <div className="inventory-summary-card">
           <span>Current Inventory</span>
-          <strong>
-            {kpis?.current_inventory_units?.toLocaleString()}
-          </strong>
+          <strong>{kpis?.current_inventory_units?.toLocaleString()}</strong>
         </div>
 
         <div className="inventory-summary-card">
           <span>Inventory Turnover</span>
-          <strong>
-            {kpis?.inventory_turnover}
-          </strong>
+          <strong>{kpis?.inventory_turnover}</strong>
         </div>
 
         <div className="inventory-summary-card">
           <span>Stockout Rate</span>
-          <strong>
-            {kpis?.stockout_rate}%
-          </strong>
+          <strong>{kpis?.stockout_rate}%</strong>
         </div>
 
         <div className="inventory-summary-card">
           <span>Units Sold</span>
-          <strong>
-            {kpis?.units_sold?.toLocaleString()}
-          </strong>
+          <strong>{kpis?.units_sold?.toLocaleString()}</strong>
         </div>
       </div>
     </div>
@@ -282,7 +247,10 @@ function App() {
 
       case "inventory":
         return renderInventory();
-
+      case "upload":
+        return <DatasetUpload />;
+      case "library":
+        return <DatasetLibrary />;
       default:
         return renderDashboard();
     }
@@ -290,13 +258,11 @@ function App() {
 
   return (
     <div className="app-shell">
-
       {/* =====================================================
           SIDEBAR
       ===================================================== */}
 
       <aside className="sidebar">
-
         <div className="brand">
           <div className="brand-icon">
             <Database size={21} />
@@ -309,95 +275,72 @@ function App() {
         </div>
 
         <nav className="sidebar-nav">
-
-          <p className="nav-label">
-            WORKSPACE
-          </p>
+          <p className="nav-label">WORKSPACE</p>
 
           <button
-            className={`nav-item ${
-              activeView === "dashboard"
-                ? "active"
-                : ""
-            }`}
-            onClick={() =>
-              handleNavigation("dashboard")
-            }
+            className={`nav-item ${activeView === "dashboard" ? "active" : ""}`}
+            onClick={() => handleNavigation("dashboard")}
           >
             <LayoutDashboard size={18} />
             <span>Dashboard</span>
           </button>
 
           <button
-            className={`nav-item ${
-              activeView === "sales"
-                ? "active"
-                : ""
-            }`}
-            onClick={() =>
-              handleNavigation("sales")
-            }
+            className={`nav-item ${activeView === "sales" ? "active" : ""}`}
+            onClick={() => handleNavigation("sales")}
           >
             <BarChart3 size={18} />
             <span>Sales Analytics</span>
           </button>
 
           <button
-            className={`nav-item ${
-              activeView === "logistics"
-                ? "active"
-                : ""
-            }`}
-            onClick={() =>
-              handleNavigation("logistics")
-            }
+            className={`nav-item ${activeView === "logistics" ? "active" : ""}`}
+            onClick={() => handleNavigation("logistics")}
           >
             <Truck size={18} />
             <span>Logistics</span>
           </button>
 
           <button
-            className={`nav-item ${
-              activeView === "inventory"
-                ? "active"
-                : ""
-            }`}
-            onClick={() =>
-              handleNavigation("inventory")
-            }
+            className={`nav-item ${activeView === "inventory" ? "active" : ""}`}
+            onClick={() => handleNavigation("inventory")}
           >
             <Warehouse size={18} />
             <span>Inventory</span>
           </button>
 
+          <button
+            className={`nav-item ${activeView === "upload" ? "active" : ""}`}
+            onClick={() => handleNavigation("upload")}
+          >
+            <Upload size={18} />
+            <span>Dataset Upload</span>
+          </button>
+          <button
+            className={`nav-item ${activeView === "library" ? "active" : ""}`}
+            onClick={() => handleNavigation("library")}
+          >
+            <Database size={18} />
+            <span>Dataset Library</span>
+          </button>
         </nav>
 
         <div className="sidebar-footer">
-
           <div className="system-status">
             <span className="status-indicator"></span>
 
             <div>
-              <strong>
-                System Online
-              </strong>
+              <strong>System Online</strong>
 
-              <span>
-                Analytics API connected
-              </span>
+              <span>Analytics API connected</span>
             </div>
           </div>
 
           <div className="project-info">
-            <span>
-              Supply Chain Data Lake
-            </span>
+            <span>Supply Chain Data Lake</span>
 
-            <span>
-              v1.0.0
-            </span>
+            <span>v1.0.0</span>
           </div>
-
         </div>
       </aside>
 
@@ -406,29 +349,20 @@ function App() {
       ===================================================== */}
 
       <div className="main-content">
-
         {/* Header */}
 
         <header className="topbar">
-
           <div className="topbar-title">
-
-            <p className="eyebrow">
-              SUPPLY CHAIN DATA PLATFORM
-            </p>
+            <p className="eyebrow">SUPPLY CHAIN DATA PLATFORM</p>
 
             <h1>
-              {activeView === "dashboard" &&
-                "Supply Chain Analytics"}
+              {activeView === "dashboard" && "Supply Chain Analytics"}
 
-              {activeView === "sales" &&
-                "Sales Analytics"}
+              {activeView === "sales" && "Sales Analytics"}
 
-              {activeView === "logistics" &&
-                "Logistics Analytics"}
+              {activeView === "logistics" && "Logistics Analytics"}
 
-              {activeView === "inventory" &&
-                "Inventory Analytics"}
+              {activeView === "inventory" && "Inventory Analytics"}
             </h1>
 
             <p className="page-description">
@@ -444,85 +378,54 @@ function App() {
               {activeView === "inventory" &&
                 "Warehouse inventory levels, utilization and stock movement."}
             </p>
-
           </div>
 
           <div className="topbar-actions">
-
             <button
               className="refresh-button"
               onClick={loadDashboardData}
               disabled={loading}
             >
-              <RefreshCw
-                size={15}
-                className={
-                  loading ? "spinning" : ""
-                }
-              />
-
+              <RefreshCw size={15} className={loading ? "spinning" : ""} />
               Refresh
             </button>
 
             <div className="live-status">
-
               <span className="live-dot"></span>
 
-              <span>
-                Live Analytics
-              </span>
-
+              <span>Live Analytics</span>
             </div>
-
           </div>
-
         </header>
 
         {/* Content */}
 
         <main className="dashboard-content">
-
           {loading && (
             <div className="loading-state">
               <Activity size={20} />
-              <span>
-                Loading analytics...
-              </span>
+              <span>Loading analytics...</span>
             </div>
           )}
 
           {error && (
             <div className="error-state">
-              <strong>
-                Connection Error
-              </strong>
+              <strong>Connection Error</strong>
 
-              <span>
-                {error}
-              </span>
+              <span>{error}</span>
             </div>
           )}
 
-          {!loading &&
-            !error &&
-            renderActiveView()}
-
+          {!loading && !error && renderActiveView()}
         </main>
 
         {/* Footer */}
 
         <footer className="dashboard-footer">
+          <span>Supply Chain Data Platform</span>
 
-          <span>
-            Supply Chain Data Platform
-          </span>
-
-          <span>
-            PostgreSQL • FastAPI • React
-          </span>
-
+          <span>PostgreSQL • FastAPI • React</span>
         </footer>
-
       </div>
     </div>
   );

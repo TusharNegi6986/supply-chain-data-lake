@@ -85,3 +85,59 @@ def test_upload_valid_csv(
     assert body["semantic_mapping"] == {"order_id": "Order ID"}
     mock_to_parquet.assert_called_once()
     mock_load.assert_called_once()
+
+
+@patch("app.api.datasets.fetch_one", return_value=None)
+@patch("app.api.datasets.load_dataset")
+@patch("app.api.datasets.profile_dataset")
+@patch("app.api.datasets.map_dataset_semantics")
+@patch("app.api.datasets.calculate_file_hash", return_value="test-sha256")
+@patch("app.api.datasets.RAW_DIR")
+@patch("app.api.datasets.PROCESSED_DIR")
+def test_dataset_details_uses_filesystem_fallback(
+    mock_processed_root,
+    mock_raw_root,
+    mock_hash,
+    mock_map,
+    mock_profile,
+    mock_load,
+    mock_fetch_one,
+    tmp_path,
+):
+    import pandas as pd
+
+    dataset_id = "ds_fallback123"
+    raw_dir = tmp_path / "raw" / dataset_id
+    processed_dir = tmp_path / "processed" / dataset_id
+
+    raw_dir.mkdir(parents=True)
+    processed_dir.mkdir(parents=True)
+
+    raw_file = raw_dir / "orders.csv"
+    raw_file.write_text("order_id\n1\n2\n", encoding="utf-8")
+    (processed_dir / "data.parquet").write_bytes(b"test parquet placeholder")
+
+    mock_raw_root.__truediv__.return_value = raw_dir
+    mock_processed_root.__truediv__.return_value = processed_dir
+
+    dataframe = pd.DataFrame({"order_id": [1, 2]})
+    mock_load.return_value = dataframe
+    mock_profile.return_value = {
+        "rows": 2,
+        "columns": 1,
+        "duplicate_rows": 0,
+        "total_missing_values": 0,
+        "completeness_percentage": 100,
+    }
+    mock_map.return_value = [{"column_name": "order_id"}]
+
+    response = client.get(f"/api/datasets/{dataset_id}")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "success"
+    assert body["dataset"]["dataset_id"] == dataset_id
+    assert body["dataset"]["filename"] == "orders.csv"
+    assert body["dataset"]["row_count"] == 2
+    assert body["dataset"]["sha256"] == "test-sha256"
+    mock_fetch_one.assert_called_once()

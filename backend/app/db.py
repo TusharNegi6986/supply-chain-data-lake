@@ -1,4 +1,6 @@
-﻿import os
+﻿
+import os
+
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
@@ -18,24 +20,35 @@ def get_connection():
     return psycopg2.connect(**DB_CONFIG)
 
 
-def fetch_all(query: str):
+def fetch_all(query: str, params: tuple = ()):
     conn = get_connection()
-
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            cursor.execute(query)
+            cursor.execute(query, params)
             return [dict(row) for row in cursor.fetchall()]
     finally:
         conn.close()
 
 
-def fetch_one(query: str):
+def fetch_one(query: str, params: tuple = ()):
     conn = get_connection()
-
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            cursor.execute(query)
+            cursor.execute(query, params)
             row = cursor.fetchone()
             return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def execute_query(query: str, params: tuple = ()):
+    conn = get_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(query, params)
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()

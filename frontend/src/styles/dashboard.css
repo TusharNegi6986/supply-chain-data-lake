@@ -372,14 +372,12 @@ body {
 
 .dashboard-content {
   flex: 1;
-
   min-height: 0;
-
   width: 100%;
-
-  padding: 20px 30px 14px;
-
-  overflow: hidden;
+  padding: 20px 30px 24px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
 }
 
 .dashboard-section {
@@ -1188,4 +1186,275 @@ body {
 .warehouse-chart-container
 .recharts-responsive-container {
   overflow: visible !important;
+}
+
+
+/* =========================================================
+   DATASET DETAILS
+========================================================= */
+
+.dataset-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+  width: 100%;
+}
+
+.dataset-detail-item,
+.dataset-detail-section {
+  min-width: 0;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #dfe3e8;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.025);
+}
+
+.dataset-detail-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.dataset-detail-item span {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.dataset-detail-item strong {
+  color: #111827;
+  font-size: 20px;
+  font-weight: 750;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.dataset-detail-section {
+  margin-top: 14px;
+}
+
+.dataset-detail-section h3 {
+  margin: 0 0 14px;
+  color: #18212f;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.dataset-detail-section p {
+  margin: 8px 0;
+  color: #475569;
+  font-size: 11px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.dataset-hash {
+  display: block;
+  margin: 8px 0 14px;
+  padding: 10px;
+  border: 1px solid #e1e5ea;
+  border-radius: 7px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 10px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.dataset-mapping-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.dataset-mapping-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.dataset-mapping-table th,
+.dataset-mapping-table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid #e1e5ea;
+  color: #475569;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.dataset-mapping-table th {
+  background: #f8fafc;
+  color: #64748b;
+  font-weight: 750;
+}
+
+.dataset-mapping-table tr:last-child td {
+  border-bottom: none;
+}
+
+.dataset-library-card .refresh-button {
+  margin-top: 12px;
+}
+
+@media (max-width: 1000px) {
+  .dataset-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .dataset-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .dataset-detail-item,
+  .dataset-detail-section {
+    padding: 13px;
+  }
+
+  .dataset-detail-item strong {
+    font-size: 18px;
+  }
+}
+
+
+/* =========================================================
+   DATASET LIBRARY — LAYOUT AND CARD FIX
+========================================================= */
+
+.dataset-library {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.dataset-library-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.dataset-library-header h2,
+.dataset-library-header h3 {
+  margin: 0;
+  color: #18212f;
+}
+
+.dataset-library-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.dataset-library-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+  align-items: stretch;
+}
+
+.dataset-library-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  min-width: 0;
+  padding: 18px;
+  background: #ffffff;
+  border: 1px solid #dfe3e8;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
+.dataset-library-card h3 {
+  margin: 0;
+  color: #18212f;
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.dataset-library-card p {
+  margin: 0;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.dataset-library-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.dataset-library-card-header > * {
+  min-width: 0;
+}
+
+.dataset-library-card-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid #e8ebef;
+}
+
+.dataset-library-card button {
+  max-width: 100%;
+  cursor: pointer;
+}
+
+.dataset-library-card .refresh-button {
+  margin-top: 0;
+}
+
+.dataset-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #ecfdf3;
+  color: #15803d;
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .dataset-library-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .dataset-library-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dataset-library-card {
+    padding: 14px;
+  }
+
+  .dataset-library-card-actions {
+    align-items: stretch;
+  }
 }

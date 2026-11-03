@@ -42,7 +42,8 @@ def detect_column_type(series: pd.Series) -> str:
 
         parsed_dates = pd.to_datetime(
             sample,
-            errors="coerce"
+            errors="coerce",
+            format="mixed",
         )
 
         if parsed_dates.notna().mean() >= 0.9:
