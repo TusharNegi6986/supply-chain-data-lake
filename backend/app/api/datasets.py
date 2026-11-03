@@ -330,3 +330,4 @@ def get_dataset_details(dataset_id: str):
             status_code=500,
             detail=f"Could not load dataset details: {str(exc)}",
         ) from exc
+

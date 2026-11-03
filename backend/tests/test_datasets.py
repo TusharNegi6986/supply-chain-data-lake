@@ -159,3 +159,47 @@ def test_semantic_mapping_supports_unrelated_datasets():
     assert len(result) == 4
     assert mapped["salary"]["semantic_type"] == "salary"
     assert mapped["employee_name"]["semantic_type"] == "employee"
+
+
+
+@patch("app.api.datasets.RAW_DIR")
+@patch("app.api.datasets.PROCESSED_DIR")
+def test_list_datasets_returns_empty_list(
+    mock_processed_root,
+    mock_raw_root,
+    tmp_path,
+):
+    mock_raw_root.__truediv__.return_value = tmp_path / "raw"
+    mock_processed_root.__truediv__.return_value = tmp_path / "processed"
+
+    (tmp_path / "raw").mkdir()
+    (tmp_path / "processed").mkdir()
+
+    response = client.get("/api/datasets")
+
+    assert response.status_code == 200
+
+
+def test_dataset_details_returns_404_for_missing_dataset():
+    response = client.get("/api/datasets/ds_does_not_exist")
+
+    assert response.status_code == 404
+
+
+@patch("app.api.datasets.MAX_FILE_SIZE", 10)
+def test_upload_rejects_file_over_size_limit(tmp_path):
+    response = client.post(
+        "/api/datasets/upload",
+        files={
+            "file": (
+                "large.csv",
+                b"01234567890",
+                "text/csv",
+            )
+        },
+    )
+
+    assert response.status_code == 413
+    assert response.json()["detail"] == (
+        "File exceeds the 100 MB upload limit."
+    )
