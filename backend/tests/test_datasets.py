@@ -203,3 +203,31 @@ def test_upload_rejects_file_over_size_limit(tmp_path):
     assert response.json()["detail"] == (
         "File exceeds the 100 MB upload limit."
     )
+
+@patch("app.api.datasets.ensure_storage_directories")
+@patch("app.api.datasets.get_processed_dataset_dir")
+@patch("app.api.datasets.get_raw_dataset_dir")
+@patch("app.api.datasets.create_dataset_id", return_value="ds_empty123")
+def test_upload_rejects_empty_file(
+    mock_id,
+    mock_raw_dir,
+    mock_processed_dir,
+    mock_ensure_dirs,
+    tmp_path,
+):
+    raw_dir = tmp_path / "raw" / "ds_empty123"
+    processed_dir = tmp_path / "processed" / "ds_empty123"
+
+    mock_raw_dir.return_value = raw_dir
+    mock_processed_dir.return_value = processed_dir
+
+    response = client.post(
+        "/api/datasets/upload",
+        files={
+            "file": ("empty.csv", b"", "text/csv"),
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "The uploaded file is empty."
+    assert not (raw_dir / "empty.csv").exists()
