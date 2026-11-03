@@ -141,3 +141,21 @@ def test_dataset_details_uses_filesystem_fallback(
     assert body["dataset"]["row_count"] == 2
     assert body["dataset"]["sha256"] == "test-sha256"
     mock_fetch_one.assert_called_once()
+
+def test_semantic_mapping_supports_unrelated_datasets():
+    import pandas as pd
+    from backend.app.services.semantic_mapper import map_dataset_semantics
+
+    df = pd.DataFrame({
+        "employee_name": ["Asha", "Ravi"],
+        "salary": [40000, 50000],
+        "email_address": ["asha@example.com", "ravi@example.com"],
+        "performance_rating": [4.5, 3.8],
+    })
+
+    result = map_dataset_semantics(df)
+    mapped = {item["column_name"]: item for item in result}
+
+    assert len(result) == 4
+    assert mapped["salary"]["semantic_type"] == "salary"
+    assert mapped["employee_name"]["semantic_type"] == "employee"
