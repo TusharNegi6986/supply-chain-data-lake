@@ -178,9 +178,6 @@ async def upload_dataset(
         }
 
     except HTTPException:
-        raise
-
-    except HTTPException:
         raw_path.unlink(missing_ok=True)
         parquet_path = processed_dir / "data.parquet"
         parquet_path.unlink(missing_ok=True)
